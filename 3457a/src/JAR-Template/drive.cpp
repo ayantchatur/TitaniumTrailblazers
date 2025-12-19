@@ -265,9 +265,6 @@ void Drive::turn_to_angle(float angle, float turn_max_voltage, float turn_settle
 }
 
 void Drive::turn_to_angle(float angle, float turn_max_voltage, float turn_settle_error, float turn_settle_time, float turn_timeout, float turn_kp, float turn_ki, float turn_kd, float turn_starti){
-  // Adding offset for PID accuracy
-  float turn_offset = 4.7;
-  angle = angle + turn_offset;
   PID turnPID(reduce_negative_180_to_180(angle - get_absolute_heading()), turn_kp, turn_ki, turn_kd, turn_starti, turn_settle_error, turn_settle_time, turn_timeout);
   while( !turnPID.is_settled() ){
     float error = reduce_negative_180_to_180(angle - get_absolute_heading());
@@ -276,6 +273,7 @@ void Drive::turn_to_angle(float angle, float turn_max_voltage, float turn_settle
     drive_with_voltage(output, -output);
     task::sleep(10);
   }
+    drive_with_voltage(0, 0);
 }
 
 /**
@@ -309,10 +307,12 @@ void Drive::drive_distance(float distance, float heading, float drive_max_voltag
 void Drive::drive_distance(float distance, float heading, float drive_max_voltage, float heading_max_voltage, float drive_settle_error, float drive_settle_time, float drive_timeout, float drive_kp, float drive_ki, float drive_kd, float drive_starti, float heading_kp, float heading_ki, float heading_kd, float heading_starti){
   PID drivePID(distance, drive_kp, drive_ki, drive_kd, drive_starti, drive_settle_error, drive_settle_time, drive_timeout);
   PID headingPID(reduce_negative_180_to_180(heading - get_absolute_heading()), heading_kp, heading_ki, heading_kd, heading_starti);
-  float start_average_position = (get_left_position_in()+get_right_position_in())/2.0;
+  // float start_average_position = (get_left_position_in()+get_right_position_in())/2.0;
+  
+  float start_average_position = chassis.get_ForwardTracker_position();
   float average_position = start_average_position;
   while(drivePID.is_settled() == false){
-    average_position = (get_left_position_in()+get_right_position_in())/2.0;
+    average_position = chassis.get_ForwardTracker_position();
     float drive_error = distance+start_average_position-average_position;
     float heading_error = reduce_negative_180_to_180(heading - get_absolute_heading());
     float drive_output = drivePID.compute(drive_error);
@@ -324,6 +324,7 @@ void Drive::drive_distance(float distance, float heading, float drive_max_voltag
     drive_with_voltage(drive_output+heading_output, drive_output-heading_output);
     task::sleep(10);
   }
+  drive_with_voltage(0, 0);
 }
 
 /**
@@ -513,6 +514,7 @@ void Drive::drive_to_point(float X_position, float Y_position, float drive_min_v
     drive_with_voltage(left_voltage_scaling(drive_output, heading_output), right_voltage_scaling(drive_output, heading_output));
     task::sleep(10);
   }
+   //drive_with_voltage(0,0);
 }
 
 /**
@@ -598,6 +600,7 @@ void Drive::drive_to_pose(float X_position, float Y_position, float angle, float
     drive_with_voltage(left_voltage_scaling(drive_output, heading_output), right_voltage_scaling(drive_output, heading_output));
     task::sleep(10);
   }
+  drive_with_voltage(0,0);
 }
 
 /**
@@ -633,8 +636,8 @@ void Drive::turn_to_point(float X_position, float Y_position, float extra_angle_
     drive_with_voltage(output, -output);
     task::sleep(10);
   }
+  drive_with_voltage(0, 0);
 }
-
 /**
  * Drives and turns simultaneously to a desired pose.
  * Uses two PID loops, one drive and one heading to drive and turn
