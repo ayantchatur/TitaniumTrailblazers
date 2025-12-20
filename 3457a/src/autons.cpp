@@ -1,4 +1,6 @@
 #include "vex.h"
+#include "autons.h"
+#include "robot-config.h"
 
 /**
  * Resets the constants for auton movement.
@@ -10,6 +12,16 @@
 
 void default_constants(){
   // Each constant set is in the form of (maxVoltage, kP, kI, kD, startI).
+  // chassis.set_drive_constants(10, 1.5, 0, 10, 0);
+  // chassis.set_heading_constants(6, .4, 0, 1, 0);
+  // chassis.set_turn_constants(6, 0.2, 0, 1.5, 5); //(3, 0.3, 0, 1, 5);
+  // chassis.set_swing_constants(12, .3, .001, 2, 15);
+
+  // // Each exit condition set is in the form of (settle_error, settle_time, timeout).
+  // chassis.set_drive_exit_conditions(1.5, 300, 5000);
+  // chassis.set_turn_exit_conditions(1, 300, 3000);
+  // chassis.set_swing_exit_conditions(1, 300, 3000);
+
   chassis.set_drive_constants(10, 0.4, 0, 1.3, 0);//0.4kd
   chassis.set_heading_constants(3, 0.5, 0, 0.00, 0);//(3, 1.1, 0, 0.01, 0);
   chassis.set_turn_constants(12, .4, .03, 3.5, 10);//3.18
@@ -29,6 +41,12 @@ void default_constants(){
 
 void odom_constants(){
   default_constants();
+  // chassis.heading_max_voltage = 10;
+  // chassis.drive_max_voltage = 8;
+  // chassis.drive_settle_error = 3;
+  // chassis.boomerang_lead = .5;
+  // chassis.drive_min_voltage = 0;
+
   chassis.heading_max_voltage = 3;//
   chassis.drive_max_voltage = 8;
   chassis.drive_settle_error = 3;
@@ -39,475 +57,170 @@ void odom_constants(){
 /**
  * The expected behavior is to return to the start position.
  */
-void matchloadTask() 
-{
-  wait(1000,msec);           // Espera 800 milisegundos
-  MatchLoad.set(true);        // Activa el pistón
-  wait(300,msec);  
-  MatchLoad.set(false);
-}
 
-void matchloadTask2() 
-{
-  wait(700,msec);           // Espera 800 milisegundos
-  MatchLoad.set(true);        // Activa el pistón
-  wait(300,msec);  
-  MatchLoad.set(false);
-}
-void matchloadTask3() 
-{
-  wait(200,msec);           // Espera 800 milisegundos
-  MatchLoad.set(true);        // Activa el pistón
-  wait(300,msec);  
-  MatchLoad.set(false);
-}
-
-
-void SoloAWPSignature()
-{
-  chassis.set_coordinates(0, 0, 0);
-  odom_constants();
-  chassis.set_drive_exit_conditions(1.5, 100, 1050);//// 1101
-  chassis.drive_distance(31,0);
-  chassis.set_turn_exit_conditions(1, 100, 270);/////////300
-  MatchLoad.set(true);
-  chassis.turn_to_angle(90);
-  chassis.set_turn_exit_conditions(1, 100, 300);/////////
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  wait(100,msec);//200
-  chassis.set_drive_exit_conditions(1.5, 100, 600);
-  chassis.drive_distance(10,90);
-  chassis.drive_with_voltage(1, 1);//////////////////////
-  wait(650,msec); //tal vez cambiar para no agarrar azul
-  chassis.set_drive_exit_conditions(1.5, 100, 700);/////////1000
-  chassis.drive_distance(-35,90);
-  MatchLoad.set(false);
-  chassis.drive_with_voltage(-2, -2);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(1100,msec);//2000
-  chassis.drive_with_voltage(12, 12);
-  wait(150,msec); //200
-  chassis.drive_with_voltage(12, -6);
-  wait(200,msec);//300
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  chassis.set_drive_exit_conditions(1.5, 100, 800);//800
-  chassis.turn_to_point(-25,6);///-25,6
-  chassis.drive_to_point(-25,6);
-  thread matchloadThread(matchloadTask);
-  chassis.set_drive_exit_conditions(1.5, 100, 5000);
-  chassis.drive_to_point(-25,-41);
-  chassis.set_turn_exit_conditions(1, 100, 200);///250
-  chassis.turn_to_angle(130);
-  chassis.set_drive_exit_conditions(1.5, 100, 450);/////////////////////
-  chassis.set_turn_exit_conditions(1, 100, 3000);
-  chassis.drive_distance(-30,130);//////////////////////////////////////-24
-   MatchLoad.set(false);
-  CenterGoal.set(true);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 100, pct);//
-  wait(900,msec);//2000
-  ScoreMotor.spin(reverse, 30, pct);//
-  CenterGoal.set(false);
-  chassis.set_drive_exit_conditions(1.5, 100, 1300);///5000
-  chassis.drive_distance(54,135);
-  MatchLoad.set(true);
-  chassis.set_turn_exit_conditions(1, 100, 300);// nuevo
-  chassis.turn_to_angle(90);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  chassis.set_drive_exit_conditions(1.5, 100, 600);
-  chassis.drive_distance(15,90);
-  chassis.drive_with_voltage(5, 5);
-  wait(650,msec); //tal vez cambiar para no agarrar azul
-  chassis.set_drive_exit_conditions(1.5, 100, 800);/////////1000
-  chassis.drive_distance(-40,90);//-35
-  MatchLoad.set(false);
-  chassis.DriveL.spin(reverse,0,pct);
-  chassis.DriveR.spin(reverse,0,pct);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(1000,msec);//2000
-}
-void RightSide_HalfAWP()
-{
-  chassis.set_coordinates(0, 0, 0);
-  odom_constants();
-  chassis.set_drive_exit_conditions(1.5, 100, 1050);//// 1101
-  chassis.drive_distance(31,0);
-  chassis.set_turn_exit_conditions(1, 100, 270);/////////300
-  MatchLoad.set(true);
-  chassis.turn_to_angle(90);
-  chassis.set_turn_exit_conditions(1, 100, 300);/////////
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  wait(100,msec);//200
-  chassis.set_drive_exit_conditions(1.5, 100, 600);
-  chassis.drive_distance(10,90);
-  chassis.drive_with_voltage(1, 1);//////////////////////
-  wait(650,msec); //tal vez cambiar para no agarrar azul
-  chassis.set_drive_exit_conditions(1.5, 100, 700);/////////1000
-  chassis.drive_distance(-35,90);
-  MatchLoad.set(false);
-  chassis.drive_with_voltage(-2, -2);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(1400,msec);//1100
-
-  chassis.drive_with_voltage(12, 12);
-  wait(150,msec); //200
-  chassis.drive_with_voltage(12, -6);
-  wait(200,msec);//300
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  chassis.set_drive_exit_conditions(1.5, 100, 800);//800
-  chassis.turn_to_point(-25,6);///-25,6
-  chassis.drive_to_point(-25,6);
-  thread matchloadThread(matchloadTask);
-  chassis.set_drive_exit_conditions(1.5, 100, 5000);
-  chassis.drive_to_point(-25,-41);
-  chassis.set_turn_exit_conditions(1, 100, 200);///250
-  chassis.turn_to_angle(130);
-  chassis.set_drive_exit_conditions(1.5, 100, 450);/////////////////////
-  chassis.set_turn_exit_conditions(1, 100, 3000);
-  chassis.drive_distance(-30,130);//////////////////////////////////////-24
-  MatchLoad.set(false);
-  CenterGoal.set(true);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 100, pct);//
-  wait(1300,msec);//900
-  chassis.drive_with_voltage(0, 0);
-}
-void RightSide_1LowGoal()
-{
-  odom_constants();
-  chassis.drive_distance(25);
-  MatchLoad.set(true);
-  wait(600,msec);
-  MatchLoad.set(false);
-  chassis.drive_min_voltage = 4;
-  chassis.drive_distance(3);
-  chassis.drive_min_voltage = 0;
-  chassis.turn_to_angle(90);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  thread matchloadThread(matchloadTask3);
-  chassis.drive_distance(22);
-  chassis.turn_to_point(42,0);
-  chassis.drive_to_point(42,0);
-  chassis.turn_to_angle(180);
-  MatchLoad.set(true);
-  chassis.set_drive_exit_conditions(1.5, 100, 600);
-  chassis.drive_distance(15,180);
-  chassis.drive_with_voltage(1, 1);
-  wait(650,msec); //tal vez cambiar para no agarrar azul
-  chassis.set_drive_exit_conditions(1.5, 100, 800);/////////1000
-  chassis.drive_distance(-40,180);//-35
-  MatchLoad.set(false);
-  chassis.DriveL.spin(reverse,0,pct);
-  chassis.DriveR.spin(reverse,0,pct);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(1300,msec);//2000
-}
-
-void RightSideRush()
-{
-  odom_constants();
-  chassis.set_coordinates(-4.12, -5.36, 295.16);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  chassis.set_drive_exit_conditions(1.5, 100, 1100);
-  thread matchloadThread(matchloadTask2);
-  chassis.drive_distance(31);
-  chassis.drive_max_voltage = 8;
-  chassis.turn_to_point(-42,25);
-  chassis.drive_to_point(-42,25);
-  chassis.drive_with_voltage(8,0);
-  wait(300,msec);
-  chassis.drive_with_voltage(0,0);
-  wait(400,msec);
-  chassis.drive_with_voltage(-8,0);
-  wait(300,msec);
-  chassis.drive_with_voltage(0,0);
-  wait(300,msec);
-  chassis.drive_distance(-20);
-  chassis.turn_to_point(0,31);
-  chassis.drive_to_point(0,31);
-  chassis.turn_to_angle(95);
-  chassis.set_drive_exit_conditions(1.5, 100, 600);///
-  chassis.drive_distance(-30);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(1000,msec);//2000
-  ScoreMotor.spin(reverse, 20, pct);
-  MatchLoad.set(true);
-  chassis.set_drive_exit_conditions(1.5, 100, 1200);//// 600
-  chassis.drive_distance(32,95);//40
-  chassis.drive_with_voltage(1, 1);
-  wait(650,msec); //tal vez cambiar para no agarrar azul
-  chassis.set_drive_exit_conditions(1.5, 100, 900);/////////800
-  chassis.drive_distance(-40,95);//-35
-  MatchLoad.set(false);
-  chassis.DriveL.spin(reverse,0,pct);
-  chassis.DriveR.spin(reverse,0,pct);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(1000,msec);//2000
-}
-void LeftSideRush()
-{
-  odom_constants();
-  chassis.set_coordinates(-4.21, -30, 250.97);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  chassis.set_drive_exit_conditions(1.5, 100, 1100);
-  thread matchloadThread(matchloadTask2);
-  chassis.drive_distance(31);
-  chassis.drive_max_voltage = 8;
-  chassis.turn_to_point(-44,-59);
-  chassis.drive_to_point(-44,-59);//-57
-  chassis.drive_with_voltage(0,8);
-  wait(250,msec);
-  chassis.drive_with_voltage(0,0);
-  wait(400,msec);
-  chassis.drive_with_voltage(0,-8);
-  wait(250,msec);
-  chassis.drive_with_voltage(0,0);
-  wait(300,msec);
-  chassis.drive_distance(-20);
-  chassis.turn_to_point(0,-68);
-  chassis.drive_to_point(0,-68);
-  chassis.turn_to_angle(92);
-  chassis.set_drive_exit_conditions(1.5, 100, 600);///
-  chassis.drive_distance(-33,92);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(1000,msec);//2000
-  ScoreMotor.spin(reverse, 20, pct);
-  MatchLoad.set(true);
-  chassis.set_drive_exit_conditions(1.5, 100, 1200);//// 600
-  chassis.drive_distance(33,92);//40
-  chassis.drive_with_voltage(1, 1);
-  wait(650,msec); //tal vez cambiar para no agarrar azul
-  chassis.set_drive_exit_conditions(1.5, 100, 900);/////////800
-  chassis.drive_distance(-40,92);//-35
-  MatchLoad.set(false);
-  chassis.DriveL.spin(reverse,0,pct);
-  chassis.DriveR.spin(reverse,0,pct);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(1000,msec);//2000
-}
-void LeftSide_MiddleGoal()
-{
-  odom_constants();
-  chassis.set_coordinates(-4.21, -30, 250.97);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  chassis.set_drive_exit_conditions(1.5, 100, 1100);
-  thread matchloadThread(matchloadTask2);
-  chassis.drive_distance(31);
-  chassis.drive_max_voltage = 8;
-  chassis.turn_to_point(-44,-59);
-  chassis.drive_to_point(-44,-59);//-57
-  chassis.drive_with_voltage(0,8);
-  wait(250,msec);
-  chassis.drive_with_voltage(0,0);
-  wait(400,msec);
-  chassis.drive_with_voltage(0,-8);
-  wait(250,msec);
-  chassis.drive_with_voltage(0,0);
-  wait(300,msec);
-  chassis.drive_distance(-22);
-  chassis.turn_to_angle(135);
-  chassis.drive_distance(-23);
-  CenterGoal.set(true);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 100, pct);//
-  wait(900,msec);//2000
-  ScoreMotor.spin(reverse, 30, pct);//
-  CenterGoal.set(false);
-  chassis.set_drive_exit_conditions(1.5, 100, 1300);///5000
-  chassis.turn_to_point(0,-67);
-  chassis.drive_to_point(0,-67);
-  chassis.turn_to_angle(92);
-  chassis.set_drive_exit_conditions(1.5, 100, 600);///
-  chassis.drive_distance(-33,92);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(1000,msec);//2000
-  ScoreMotor.spin(reverse, 20, pct);
-  MatchLoad.set(true);
-  chassis.set_drive_exit_conditions(1.5, 100, 1200);//// 600
-  chassis.drive_distance(31,92);//40
-  chassis.drive_with_voltage(1, 1);
-  wait(650,msec); //tal vez cambiar para no agarrar azul
-  chassis.set_drive_exit_conditions(1.5, 100, 900);/////////800
-  chassis.drive_distance(-40,92);//-35
-  MatchLoad.set(false);
-  chassis.DriveL.spin(reverse,0,pct);
-  chassis.DriveR.spin(reverse,0,pct);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(1000,msec);//2000
-}
-
-void Rutine(float dist1,float time1,float angle)
-{
-   chassis.set_turn_exit_conditions(1, 100, 270);/////////300
-  MatchLoad.set(true);
-  chassis.turn_to_angle(angle);
-  chassis.set_turn_exit_conditions(1, 100, 300);/////////
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  wait(100,msec);//200
-  chassis.set_drive_exit_conditions(1.5, 100, time1);
-  chassis.drive_distance(dist1,angle);
-  chassis.drive_with_voltage(1, 1);//////////////////////
-  wait(1800,msec); //tal vez cambiar para no agarrar azul
-  chassis.set_drive_exit_conditions(1.5, 100, 700);/////////1000
-  chassis.drive_distance(-35,angle);
-  MatchLoad.set(false);
-  chassis.drive_with_voltage(-2, -2);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(2000,msec);//2000
-  chassis.drive_distance(14);
-}
-void Rutine2(float dist1,float time1,float angle)
-{
-  chassis.set_turn_exit_conditions(1, 100, 270);/////////300
-  MatchLoad.set(true);
-  chassis.turn_to_angle(angle);
-  chassis.set_turn_exit_conditions(1, 100, 300);/////////
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(reverse, 20, pct);
-  wait(100,msec);//200
-  chassis.set_drive_exit_conditions(1.5, 100, time1);
-  chassis.drive_distance(dist1,angle);
-  chassis.drive_with_voltage(1, 1);//////////////////////
-  wait(1800,msec); //tal vez cambiar para no agarrar azul
-  chassis.set_drive_exit_conditions(1.5, 100, 700);/////////1000
-  chassis.drive_distance(-20,angle);//-35
-  MatchLoad.set(false);
-
-}
-void Rutine3(float angle)
-{
-  chassis.set_drive_exit_conditions(1.5, 100, 700);/////////1000
-  chassis.drive_distance(-15,angle);//-35
-  MatchLoad.set(false);
-  chassis.drive_with_voltage(-2, -2);
-  IntakeMotor.spin(forward, 100, pct);
-  ScoreMotor.spin(forward, 100, pct);
-  wait(2000,msec);//2000
-  chassis.drive_distance(14);
-}
-
-void Skills()
-{
-  chassis.set_coordinates(0, 0, 0);
-  odom_constants();
-  chassis.set_drive_exit_conditions(1.5, 100, 1050);//// 1101
-  chassis.drive_distance(31,0);
-  Rutine(10,600,90);
-  chassis.set_drive_exit_conditions(1.5, 100, 5000);
-  chassis.set_turn_exit_conditions(1, 100, 3000);/////////
-
-  // chassis.turn_to_angle(180);
-  chassis.turn_to_point(-5.96,-70);//-69
-  // chassis.drive_distance(98);
-
-
-  chassis.drive_to_point(-5.96,-70);//72
-
-  Rutine(21,900,90);//10,600 TAL VEZ ANGULO 19
-  chassis.set_drive_exit_conditions(1.5, 100, 5000);
-  chassis.set_turn_exit_conditions(1, 100, 270);/////////
-  chassis.turn_to_angle(40);
-  chassis.drive_to_point(-18,-79);
-  chassis.turn_to_angle(90);
-  chassis.drive_distance(-70,90);
-  chassis.set_turn_exit_conditions(1, 100, 3000);/////////
-  chassis.turn_to_angle(360);
-  chassis.drive_distance(14); //- 8
-  Rutine2(23,1000,270);
-  chassis.set_drive_exit_conditions(1.5, 100, 5000);
-  chassis.set_turn_exit_conditions(1, 100, 3000);
-  chassis.turn_to_angle(360);
-  chassis.drive_distance(96);
-  chassis.turn_to_angle(270);
-  Rutine3(270);
-  Rutine2(23,1000,270);
-  chassis.set_drive_exit_conditions(1.5, 100, 5000);
-  chassis.set_turn_exit_conditions(1, 100, 3000);
-  chassis.turn_to_angle(183);
-  chassis.drive_distance(98);//97
-  chassis.turn_to_angle(270);
-  Rutine3(270);
-  chassis.turn_to_angle(225);
-  chassis.drive_distance(-23);//-18
-  chassis.turn_to_angle(270);
-  chassis.drive_max_voltage = 12;
-  chassis.set_drive_exit_conditions(1.5, 100, 2000);
-  chassis.drive_distance(-102);
-  chassis.drive_with_voltage(8,8);
-  wait(150,msec);
-  chassis.drive_with_voltage(0,0);
-  while( chassis.get_absolute_heading() > 0.0)
-  {
-    chassis.drive_with_voltage(0,-10);
-    wait(20,msec);
-  } 
-  chassis.drive_with_voltage(0,0);
-
-
-
-
-
-
-
-}
 void drive_test(){
-
-  //  chassis.drive_distance(48);
-  //  chassis.drive_distance(-48);
-  // chassis.turn_to_angle(180);
-
   // chassis.drive_distance(6);
   // chassis.drive_distance(12);
   // chassis.drive_distance(18);
-  // chassis.drive_distance(-36,0.0,8.0,3);
-  // chassis.turn_to_angle(5);
-  // chassis.turn_to_angle(30);
-  // chassis.turn_to_angle(90);
-  // chassis.turn_to_angle(225);
-  // chassis.turn_to_angle(0);
-
-
-  odom_constants();
-
-  // chassis.drive_to_point(0,24);
-  // chassis.turn_to_point(24,24);
-  // chassis.drive_to_point(24,24);;
-  // chassis.drive_to_point(0,0);
-  // chassis.turn_to_angle(0);
-
-    chassis.drive_to_pose(0, 24, 0);
-    chassis.drive_to_pose(0, 0, 0);
-  // chassis.drive_to_point(0,24);
-  //  chassis.turn_to_angle(180);
-  //     chassis.turn_to_angle(180);
-  // chassis.drive_to_point(0,0);
-  // chassis.turn_to_angle(0);
-
-
-
+  // chassis.drive_distance(-36);
 }
 
+void tunepid(){
+  // Add debug messages
+    // float turn = 8.3;
+
+    // trial for pid
+    //******************************************************
+    Brain.Screen.clearScreen();
+    // Calibrate inertial first
+    Brain.Screen.printAt(5, 20, "Calibrating...");
+    //chassis.Gyro.calibrate();
+    Inertial.calibrate();
+    wait(1000, msec);
+    // Test current PID values
+    Brain.Screen.clearScreen();
+    Brain.Screen.printAt(5, 20, "PID Tune Test");
+    Brain.Screen.printAt(5, 40, "Starting angle: %.1f", chassis.get_absolute_heading());
+    wait(2000, msec);
+    // Try to turn exactly 90 degrees
+    chassis.set_turn_exit_conditions(5, 150, 2000);
+    chassis.turn_to_angle(90);
+    wait(2000, msec);
+    LeftDrive.stop(hold);
+    RightDrive.stop(hold);
+    // Show results
+    double final_angle = chassis.get_absolute_heading();
+    double error = 90.0 - final_angle;
+    Brain.Screen.printAt(5, 60, "Final angle: %.1f", final_angle);
+    Brain.Screen.printAt(5, 80, "Error: %.1f degrees", error);
+    Brain.Screen.printAt(5, 100, "Target was: 90.0" );
+
+    Controller1.Screen.clearScreen();
+    Controller1.Screen.setCursor(1, 1);
+    // Controller1.Screen.print("Final: %.1f", final_angle);
+    // Controller1.Screen.print("Final: %.1f", final_angle);
+    // Controller1.Screen.setCursor(2, 1);
+    // double a = 90-91;         // Testing purpose
+    Controller1.Screen.print("Final angle: %.1f", final_angle);
+    Controller1.Screen.setCursor(2,1);
+    Controller1.Screen.print("Error: %.1f degrees", error);
+    // Wait so you can read results
+    wait(1000, msec);
+    // chassis.turn_to_angle(180);
+    // double angle = chassis.get_absolute_heading();
+    // Brain.Screen.printAt(5, 120, "Final angle: %.1f", angle);
+    // Brain.Screen.printAt(5, 80, "Error: %.1f degrees", error);
+    // Brain.Screen.printAt(5, 100, "Target was: 180.0 + turn offset = 180");
+    // wait(1000, msec);
+}
+
+void drive_pid_test(){
+  Brain.Screen.clearScreen();
+  Brain.Screen.printAt(5, 20, "Calibrating...");
+  Inertial.calibrate();
+  wait(1000, msec);
+  
+  // Test current PID values
+  Brain.Screen.clearScreen();
+  Brain.Screen.printAt(5, 20, "Drive PID Test");
+  Brain.Screen.printAt(5, 40, "Starting position");
+  
+  // Print to controller
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1, 1);
+  Controller1.Screen.print("Drive Test Start");
+  
+  wait(2000, msec);
+  
+  // Reset motor positions to track distance
+  LeftDrive.resetPosition();
+  RightDrive.resetPosition();
+  
+  float target_distance = -10.0; // Drive 24 inches forward
+  
+  // Record starting positions
+  float start_left = chassis.get_left_position_in();
+  float start_right = chassis.get_right_position_in();
+  
+  Brain.Screen.printAt(5, 60, "Driving %.1f inches...", target_distance);
+  Controller1.Screen.setCursor(2, 1);
+  Controller1.Screen.print("Driving %.1f in", target_distance);
+  
+  // Perform drive
+  chassis.set_drive_exit_conditions(1.5, 300, 5000);
+  chassis.drive_distance(target_distance);
+  
+  wait(500, msec);
+  LeftDrive.stop(hold);
+  RightDrive.stop(hold);
+  
+  // Calculate results
+  float final_left = chassis.get_left_position_in();
+  float final_right = chassis.get_right_position_in();
+  float actual_distance = ((final_left - start_left) + (final_right - start_right)) / 2.0;
+  float error = target_distance - actual_distance;
+  
+  // Show results on Brain
+  Brain.Screen.clearScreen();
+  Brain.Screen.printAt(5, 20, "Drive PID Test Results");
+  Brain.Screen.printAt(5, 40, "Target: %.1f inches", target_distance);
+  Brain.Screen.printAt(5, 60, "Actual: %.1f inches", actual_distance);
+  Brain.Screen.printAt(5, 80, "Error: %.1f inches", error);
+  Brain.Screen.printAt(5, 100, "Left: %.1f  Right: %.1f", final_left - start_left, final_right - start_right);
+  
+  if(fabs(error) < 0.5) {
+    Brain.Screen.printAt(5, 120, "EXCELLENT!");
+  } else if(fabs(error) < 1.5) {
+    Brain.Screen.printAt(5, 120, "GOOD");
+  } else {
+    Brain.Screen.printAt(5, 120, "NEEDS TUNING");
+  }
+  
+  // Show results on Controller
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1, 1);
+  Controller1.Screen.print("Actual: %.1f in", actual_distance);
+  Controller1.Screen.setCursor(2, 1);
+  Controller1.Screen.print("Error: %.1f in", error);
+  Controller1.Screen.setCursor(3, 1);
+  
+  if(fabs(error) < 0.5) {
+    Controller1.Screen.print("EXCELLENT!");
+    // Controller1.rumble(".");
+  } else {
+    Controller1.Screen.print("Tune PID");
+    // Controller1.rumble("-");
+  }
+  
+  wait(3000, msec);
+  
+  // // Test driving backwards
+  // Brain.Screen.clearScreen();
+  // Brain.Screen.printAt(5, 20, "Testing backward drive...");
+  // Controller1.Screen.clearScreen();
+  // Controller1.Screen.setCursor(1, 1);
+  // Controller1.Screen.print("Backward test");
+  
+  // wait(1000, msec);
+  
+  // LeftDrive.resetPosition();
+  // RightDrive.resetPosition();
+  
+  // chassis.drive_distance(-target_distance);
+  // wait(500, msec);
+  
+  // float back_actual = (chassis.get_left_position_in() + chassis.get_right_position_in()) / 2.0;
+  // float back_error = -target_distance - back_actual;
+  
+  // Brain.Screen.printAt(5, 40, "Backward Error: %.1f in", back_error);
+  // Controller1.Screen.setCursor(2, 1);
+  // Controller1.Screen.print("Back Err: %.1f", back_error);
+  
+  // Brain.Screen.printAt(5, 60, "TEST COMPLETE!");
+  // Controller1.rumble("..");
+  
+  // wait(3000, msec);
+}
 /**
  * The expected behavior is to return to the start angle, after making a complete turn.
  */
@@ -535,11 +248,64 @@ void swing_test(){
 
 void full_test(){
   chassis.drive_distance(24);
-  chassis.turn_to_angle(-45);
-  chassis.drive_distance(-36);
-  chassis.right_swing_to_angle(-90);
+  chassis.turn_to_angle(45);
+  chassis.drive_distance(-5);
+  // chassis.right_swing_to_angle(-90);
+  chassis.turn_to_angle(90);
   chassis.drive_distance(24);
+  chassis.drive_distance(-10);
   chassis.turn_to_angle(0);
+}
+
+/**
+ * Tests position tracking by driving in a square using coordinates
+ */
+
+void odom_square_test(){
+  odom_constants();
+  chassis.set_coordinates(0, 0, 0);
+  
+  // Drive in a 24x24 inch square
+  chassis.drive_to_point(24, 0);    // Go right
+  chassis.drive_to_point(24, 24);   // Go forward 
+  chassis.drive_to_point(0, 24);    // Go left
+  chassis.drive_to_point(0, 0);     // Return home
+  chassis.turn_to_angle(0);         // Face original direction
+}
+
+void tuneodom(){
+  odom_constants();
+  chassis.set_coordinates(0,22,0);
+  Brain.Screen.clearScreen();
+  Brain.Screen.printAt(5,20, "X: %.1f", chassis.get_X_position());
+  Brain.Screen.printAt(5,40, "Y: %.1f", chassis.get_Y_position());
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1, 1);
+  Controller1.Screen.print("X: %.1f", chassis.get_X_position());
+  Controller1.Screen.print("Y: %.1f", chassis.get_Y_position());
+  wait(500, msec);
+  chassis.turn_to_point(-22,22);
+  wait(500, msec);
+  chassis.drive_to_point(-22,22);
+  LeftDrive.stop(hold);
+  RightDrive.stop(hold);
+  Brain.Screen.printAt(5,80, "X: %.1f", chassis.get_X_position());
+  Brain.Screen.printAt(5,100, "Y: %.1f", chassis.get_Y_position());
+  Controller1.Screen.setCursor(2, 1);
+  Controller1.Screen.print("X: %.1f", chassis.get_X_position());
+  Controller1.Screen.print("Y: %.1f", chassis.get_Y_position());
+  wait(2000, msec);
+  chassis.drive_to_point(0,22);
+  LeftDrive.stop(hold);
+  RightDrive.stop(hold);
+  wait(500, msec);
+  chassis.turn_to_angle(0);
+  wait(500, msec);
+  Brain.Screen.printAt(5,140, "X: %.1f", chassis.get_X_position());
+  Brain.Screen.printAt(5,160, "Y: %,1f", chassis.get_Y_position());
+  Controller1.Screen.setCursor(3, 1);
+  Controller1.Screen.print("X: %.1f", chassis.get_X_position());
+  Controller1.Screen.print("Y: %.1f", chassis.get_Y_position());
 }
 
 /**
@@ -552,16 +318,50 @@ void odom_test(){
   chassis.set_coordinates(0, 0, 0);
   while(1){
     Brain.Screen.clearScreen();
-    Brain.Screen.printAt(5,20, "X: %f", chassis.get_X_position());
-    Brain.Screen.printAt(5,40, "Y: %f", chassis.get_Y_position());
-    Brain.Screen.printAt(5,60, "Heading: %f", chassis.get_absolute_heading());
-    Brain.Screen.printAt(5,80, "ForwardTracker: %f", chassis.get_ForwardTracker_position());
-    Brain.Screen.printAt(5,100, "SidewaysTracker: %f", chassis.get_SidewaysTracker_position());
-    //task::sleep(20);
+    Brain.Screen.printAt(5,20, "X: %.2f inches", chassis.get_X_position());
+    Brain.Screen.printAt(5,40, "Y: %.2f inches", chassis.get_Y_position());
+    Brain.Screen.printAt(5,60, "Heading: %.1f degrees", chassis.get_absolute_heading());
+    Brain.Screen.printAt(5,80, "ForwardTracker: %.2f", chassis.get_ForwardTracker_position());
+    Brain.Screen.printAt(5,100, "SidewaysTracker: %.2f", chassis.get_SidewaysTracker_position());
+    Brain.Screen.printAt(5,120, "Push robot around to test!");
+    Brain.Screen.printAt(5,140, "Press Brain button to exit");
+    
+    if(Brain.Screen.pressing()) {
+      break;
+    }
+    wait(100, msec);
   }
-  //  chassis.drive_to_point(24,24);
-  // chassis.drive_to_pose(0,24,0);
 }
+
+void randomtest(){
+  odom_constants();
+  chassis.set_coordinates(0, 0, 0);
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1, 1);
+  double initial = chassis.get_absolute_heading();
+  Controller1.Screen.print("Initial: %.1f", initial);
+  chassis.turn_to_angle(90);
+  LeftDrive.stop(hold);
+  RightDrive.stop(hold);
+  double final = chassis.get_absolute_heading();
+  Controller1.Screen.setCursor(2, 1);
+  Controller1.Screen.print("Final: %.1f", final);
+  Controller1.Screen.setCursor(3, 1);
+  Controller1.Screen.print("Diff: %.1f", final-initial);
+  wait(5000,msec);
+}
+// void odom_test(){
+//   chassis.set_coordinates(0, 0, 0);
+//   while(1){
+//     Brain.Screen.clearScreen();
+//     Brain.Screen.printAt(5,20, "X: %f", chassis.get_X_position());
+//     Brain.Screen.printAt(5,40, "Y: %f", chassis.get_Y_position());
+//     Brain.Screen.printAt(5,60, "Heading: %f", chassis.get_absolute_heading());
+//     Brain.Screen.printAt(5,80, "ForwardTracker: %f", chassis.get_ForwardTracker_position());
+//     Brain.Screen.printAt(5,100, "SidewaysTracker: %f", chassis.get_SidewaysTracker_position());
+//     //task::sleep(20);
+//   }
+// }
 
 /**
  * Should end in the same place it began, but the second movement
@@ -589,4 +389,201 @@ void holonomic_odom_test(){
   chassis.holonomic_drive_to_pose(18, 0, 180);
   chassis.holonomic_drive_to_pose(0, 18, 270);
   chassis.holonomic_drive_to_pose(0, 0, 0);
+}
+
+/**
+ * Advanced demonstration of ODOM capabilities
+ * Shows off smooth curved paths and precise positioning
+ */
+
+void advanced_odom_demo(){
+  odom_constants();
+  chassis.set_coordinates(0, 0, 0);
+  
+  // Start intake while moving
+  IntakeMotor.spin(forward, 75, percent);
+  
+  // Complex path demonstration
+  chassis.drive_to_point(18, 12);      // Diagonal movement
+  chassis.turn_to_point(36, 0);        // Turn to face new target
+  chassis.drive_to_point(36, 0);       // Drive to target
+  
+  // Stop intake and reverse
+  IntakeMotor.stop();
+  wait(500, msec);
+  IntakeMotor.spin(reverse, 50, percent);
+  
+  // Return via different path
+  chassis.drive_to_point(18, 18);      // Go to corner
+  chassis.turn_to_angle(225);          // Face back toward start
+  chassis.drive_to_point(0, 0);        // Return home
+  chassis.turn_to_angle(0);            // Face original direction
+  
+  IntakeMotor.stop();
+}
+
+/**
+ * Custom autonomous routine template
+ * Replace this with your actual competition autonomous
+ */
+
+void custom_auton(){
+  odom_constants();
+  chassis.set_coordinates(0, 0, 0);
+  
+  // Example competition autonomous routine
+  Brain.Screen.clearScreen();
+  Brain.Screen.printAt(50, 100, "Running Custom Auton!");
+  
+  // Start intake
+  IntakeMotor.spin(forward, 100, percent);
+  
+  // Drive forward to collect first object
+  chassis.drive_distance(24);
+  wait(1000, msec);  // Wait to collect
+  
+  // Turn and drive to scoring position  
+  chassis.turn_to_angle(90);
+  chassis.drive_distance(18);
+  
+  // Score (reverse intake)
+  IntakeMotor.spin(reverse, 100, percent);
+  wait(1500, msec);
+  IntakeMotor.stop();
+  
+  // Return to start (using coordinates)
+  chassis.drive_to_point(0, 0);
+  chassis.turn_to_angle(0);
+  
+  Brain.Screen.printAt(50, 120, "Auton Complete!");
+}
+
+void ScoreLongGoals(){
+  ScoreMotor.spin(forward);
+  wait(1000,msec);
+  ScoreMotor.stop();
+}
+
+void ScoreMiddleGoal(){
+  ScoreMotor.spin(reverse);
+  wait(1000,msec);
+  ScoreMotor.stop();
+}
+
+void RightSide_HalfAWP(){
+  chassis.set_coordinates(0, 0, 0);
+  odom_constants();
+  //////////////////////////////////
+  wait(1000,msec);
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print("Step 1");
+  wait(1000,msec);
+  IntakeMotor.spin(reverse, 100, pct);
+  //////////////////////////////////
+  chassis.set_drive_exit_conditions(1.5, 100, 1050);//// 1101
+  chassis.drive_distance(30);
+  chassis.set_turn_exit_conditions(1, 100, 270);/////////300
+  IntakeTilt.set(true);
+  //////////////////////////////////
+  wait(1000,msec);
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print("Step 2");
+  wait(1000,msec);
+  //////////////////////////////////
+  chassis.turn_to_angle(270);
+  // chassis.turn_to_point(-22,27);
+  chassis.set_turn_exit_conditions(1, 100, 300);/////////
+  IntakeMotor.spin(reverse, 100, pct);
+  // IntakeMotor.spin(reverse, 20, pct);
+  wait(100,msec);//200
+  chassis.drive_to_point(-22,27);
+  //////////////////////////////////
+  wait(1000,msec);
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print("Step 3");
+  wait(1000,msec);
+  //////////////////////////////////
+  chassis.set_drive_exit_conditions(1.5, 100, 600);
+  chassis.drive_distance(10,90);
+  chassis.drive_with_voltage(1, 1);//////////////////////
+  wait(650,msec); //tal vez cambiar para no agarrar azul
+  //////////////////////////////////
+  wait(1000,msec);
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print("Step 4");
+  wait(1000,msec);
+  //////////////////////////////////
+  chassis.set_drive_exit_conditions(1.5, 100, 700);/////////1000
+  chassis.drive_distance(-35,90);
+  IntakeTilt.set(false);
+  chassis.drive_with_voltage(-2, -2);
+  IntakeMotor.spin(reverse, 100, pct);
+  ScoreLongGoals();
+  wait(1400,msec);//1100
+  //////////////////////////////////
+  wait(1000,msec);
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print("Step 5");
+  wait(1000,msec);
+  //////////////////////////////////
+  chassis.drive_with_voltage(12, 12);
+  wait(150,msec); //200
+  chassis.drive_with_voltage(12, -6);
+  wait(200,msec);//300
+  IntakeMotor.spin(forward, 100, pct);
+  // IntakeMotor.spin(reverse, 20, pct);
+  chassis.set_drive_exit_conditions(1.5, 100, 800);//800
+  //////////////////////////////////
+  wait(1000,msec);
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print("Step 6");
+  wait(1000,msec);
+  //////////////////////////////////
+  chassis.turn_to_point(-25,6);///-25,6
+  chassis.drive_to_point(-25,6);
+  //////////////////////////////////
+  wait(1000,msec);
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print("Step 7");
+  wait(1000,msec);
+  //////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+  wait(1000,msec);          
+  IntakeMotor.spin(reverse);        // Score
+  wait(300,msec);  
+  ////////////////////////////////////////////////////////////////////////////////
+  chassis.set_drive_exit_conditions(1.5, 100, 5000);
+  chassis.drive_to_point(-25,-41);
+  chassis.set_turn_exit_conditions(1, 100, 200);///250
+  //////////////////////////////////
+  wait(1000,msec);
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print("Step 8");
+  wait(1000,msec);
+  //////////////////////////////////
+  chassis.turn_to_angle(130);
+  chassis.set_drive_exit_conditions(1.5, 100, 450);/////////////////////
+  chassis.set_turn_exit_conditions(1, 100, 3000);
+  chassis.drive_distance(-30,130);//////////////////////////////////////-24
+  //////////////////////////////////
+  wait(1000,msec);
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print("Step 9");
+  wait(1000,msec);
+  //////////////////////////////////
+  //MatchLoad.set(false);
+  // CenterGoal.set(true);
+  // Intake1.spin(forward, 100, pct);
+  // Intake2.spin(reverse, 100, pct);//
+  wait(1300,msec);//900
+  chassis.drive_with_voltage(0, 0);
 }

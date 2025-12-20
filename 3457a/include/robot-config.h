@@ -1,27 +1,37 @@
 using namespace vex;
 
 extern brain Brain;
-
-extern controller Controller1;
 //To set up a motor called LeftFront here, you'd use
 //extern motor LeftFront;
-// Declaración de motores
-extern motor Left1;
-extern motor Left2;
-extern motor Left3;
-extern motor Right1;
-extern motor Right2;
-extern motor Right3;
-extern motor IntakeMotor;
-extern motor ScoreMotor;
-extern inertial IMU;
-// Declaración de salidas digitales
-extern digital_out CenterGoal;
-extern digital_out MatchLoad;
-extern digital_out Descore;
-extern optical ColorSortSensor;
 
 //Add your devices below, and don't forget to do the same in robot-config.cpp:
 
+extern controller Controller1;
+
+// Sensors
+extern inertial Inertial;
+extern rotation ForwardTracker;
+
+// LeftDrive
+extern motor LeftDriveMotorA;
+extern motor LeftDriveMotorB;
+extern motor LeftDriveMotorC;
+extern motor_group LeftDrive;
+
+//RightDrive
+extern motor RightDriveMotorA;
+extern motor RightDriveMotorB;
+extern motor RightDriveMotorC;
+extern motor_group RightDrive;
+
+// Other motors
+extern motor IntakeMotor;
+extern motor RampMotor;
+extern motor ScoreMotor;
+
+// Pneumatics
+extern digital_out Descore;
+extern digital_out IntakeTilt;
+extern digital_out Aligner;
 
 void  vexcodeInit( void );

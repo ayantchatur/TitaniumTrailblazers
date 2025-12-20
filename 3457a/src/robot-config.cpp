@@ -4,71 +4,59 @@ using namespace vex;
 using signature = vision::signature;
 using code = vision::code;
 
-
-
 // A global instance of brain used for printing to the V5 Brain screen.
-brain  Brain;
-controller Controller1;
+// brain  Brain;
+digital_out Descore(Brain.ThreeWirePort.C);
+digital_out IntakeTilt(Brain.ThreeWirePort.A);
+digital_out Aligner(Brain.ThreeWirePort.H);
 
-//The motor constructor takes motors as (port, ratio, reversed), so for example
-motor Left1= motor(PORT11, ratio6_1, true);
-motor Left2 = motor(PORT12, ratio6_1, true);
-motor Left3 = motor(PORT13, ratio6_1, true);
-motor Right1 = motor(PORT20, ratio6_1, false);
-motor Right2 = motor(PORT19, ratio6_1, false);
-motor Right3 = motor(PORT18, ratio6_1, false);
-motor IntakeMotor = motor(PORT10, ratio6_1, false);
-motor ScoreMotor = motor(PORT1, ratio6_1, true);
+// controller Controller1 = controller(primary);
 
-optical ColorSortSensor = optical(PORT9);
-inertial IMU = inertial(PORT14);
+// // Sensors
+// inertial Inertial = inertial(PORT10);
+// rotation ForwardTracker = rotation(PORT21, false);
 
-digital_out CenterGoal = digital_out(Brain.ThreeWirePort.A);
-digital_out MatchLoad = digital_out(Brain.ThreeWirePort.B);
-digital_out Descore = digital_out(Brain.ThreeWirePort.C);
+// // LeftDrive
+// motor LeftDriveMotorA = motor(PORT6, ratio6_1, true);
+// motor LeftDriveMotorB = motor(PORT3, ratio6_1, true);
+// motor LeftDriveMotorC = motor(PORT5, ratio6_1, true);
+// motor_group LeftDrive = motor_group(LeftDriveMotorA, LeftDriveMotorB, LeftDriveMotorC);
 
-// line Arm_Limit = line(Brain.ThreeWirePort.H);
+// //RightDrive
+// motor RightDriveMotorA = motor(PORT18, ratio6_1, true);
+// motor RightDriveMotorB = motor(PORT19, ratio6_1, true);
+// motor RightDriveMotorC = motor(PORT16, ratio6_1, true);
+// motor_group RightDrive = motor_group(RightDriveMotorA, RightDriveMotorB, RightDriveMotorC);
+
+// // Other motors
+// motor IntakeMotor = motor(PORT2, ratio6_1, false);
+// motor ScoreMotor = motor(PORT19, ratio18_1, true);
+
+// // Pneumatics
+// digital_out ScoreMiddle = digital_out(Brain.ThreeWirePort.A);
+// digital_out IntakeTilt = digital_out(Brain.ThreeWirePort.H);
 
 
-//Add your devices below, and don't forget to do the same in robot-config.h:
 
-
-void vexcodeInit( void ) 
-{
-  IMU.calibrate();
-  Brain.Screen.clearScreen();
-  int barWidth = 400;          // ancho de la barra
-  int barHeight = 100;         // altura de la barra
-  int barX = (480 - barWidth)/2; // centrado horizontal
-  int barY = (272 - barHeight)/2; // centrado vertical
-  int totalTime = 2500;        // tiempo estimado de calibración en ms
-  int steps = 100;             // cantidad de pasos de la barra
-
-  for (int i = 0; i <= steps; i++) 
-  {
-      if (!IMU.isCalibrating()) break;
-      Brain.Screen.setFillColor(vex::color::black);
-      Brain.Screen.drawRectangle(barX, barY, barWidth, barHeight);
-      int filledWidth = (i * barWidth) / steps;
-      Brain.Screen.setFillColor(vex::color::green);
-      Brain.Screen.drawRectangle(barX, barY, filledWidth, barHeight);
-      vex::this_thread::sleep_for(totalTime / steps);
-  }
-  Brain.Screen.setFillColor(vex::color::yellow);
-  Brain.Screen.clearScreen(yellow);
-  Brain.Screen.setPenColor(vex::color::black);
-  wait(500,msec);
-  if (fabs(chassis.get_absolute_heading()) < 3 || fabs(chassis.get_absolute_heading() - 360) < 3) 
-  {
-  Controller1.rumble(".");
-  Brain.Screen.printAt(10, 80, "IMU OK");
-  } 
-  else 
-  {
-    // Si está muy alejado de 0°, error → 3 vibraciones
-    Controller1.rumble("...");
-    Brain.Screen.printAt(10, 80, "IMU ERROR");
-  }
-  
+void vexcodeInit( void ) {
   // nothing to initialize
+  Brain.Screen.print("Device initialization...");
+  Brain.Screen.setCursor(2, 1);
+  // calibrate the drivetrain Inertial
+  wait(200, msec);
+  chassis.Gyro.calibrate();
+  Inertial.calibrate();
+  //Brain.Screen.print("Calibrating Inertial for Drivetrain");
+  // wait for the Inertial calibration process to finish
+  while (chassis.Gyro.isCalibrating()) {
+    wait(25, msec);
+  }
+  // reset the screen now that the calibration is complete
+  Brain.Screen.clearScreen();
+  Brain.Screen.setCursor(1,1);
+  wait(5, msec);
+  Brain.Screen.clearScreen();
+  LeftDrive.setVelocity(30, percent);
+  RightDrive.setVelocity(30,percent);
+  IntakeMotor.setVelocity(100,percent);
 }
