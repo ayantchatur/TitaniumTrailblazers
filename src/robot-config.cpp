@@ -7,8 +7,8 @@ using code = vision::code;
 // A global instance of brain used for printing to the V5 Brain screen.
 // brain  Brain;
 digital_out Descore(Brain.ThreeWirePort.C);
-digital_out IntakeTilt(Brain.ThreeWirePort.A);
-digital_out Aligner(Brain.ThreeWirePort.H);
+//digital_out IntakeTilt(Brain.ThreeWirePort.A);
+digital_out Matchload(Brain.ThreeWirePort.H);
 
 // controller Controller1 = controller(primary);
 

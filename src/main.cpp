@@ -9,7 +9,7 @@ brain Brain;
 controller Controller1 = controller(primary);
 
 // Sensors
-inertial Inertial = inertial(PORT5);
+inertial Inertial = inertial(PORT7);
 //rotation ForwardTracker = rotation(PORT12, false);
 
 // LeftDrive
@@ -19,20 +19,20 @@ motor LeftDriveMotorC = motor(PORT21, ratio6_1, true);
 motor_group LeftDrive = motor_group(LeftDriveMotorA, LeftDriveMotorB, LeftDriveMotorC);
 
 //RightDrive
-motor RightDriveMotorA = motor(PORT11, ratio6_1, true);
-motor RightDriveMotorB = motor(PORT10, ratio6_1, false);
+motor RightDriveMotorA = motor(PORT11, ratio6_1, false);
+motor RightDriveMotorB = motor(PORT10, ratio6_1, true);
 motor RightDriveMotorC = motor(PORT9, ratio6_1, false);
 motor_group RightDrive = motor_group(RightDriveMotorA, RightDriveMotorB, RightDriveMotorC);
 
 // Other motors
 motor IntakeMotor = motor(PORT15, ratio6_1, false);
 motor RampMotor = motor(PORT17, ratio6_1, false);
-motor ScoreMotor = motor(PORT13, ratio18_1, true);
+motor ScoreMotor = motor(PORT3, ratio18_1, true);
 
 // Pneumatics
 // digital_out Descore(Brain.ThreeWirePort.C);
 // digital_out IntakeTilt(Brain.ThreeWirePort.A);
-// digital_out Aligner(Brain.ThreeWirePort.H);
+// digital_out Matchload(Brain.ThreeWirePort.H);
 
 /*---------------------------------------------------------------------------*/
 /*                             VEXcode Config                                */
@@ -70,7 +70,7 @@ Drive chassis(
 //
 //Write it here:
 ZERO_TRACKER_ODOM,
-//TANK_TWO_ROTATION,
+//TANK_TWO_ROTATION, 
 //ZERO_TRACKER_NO_ODOM,
 
 //Add the names of your Drive motors into the motor groups below, separated by commas, i.e. motor_group(Motor1,Motor2,Motor3).
@@ -83,7 +83,7 @@ motor_group(LeftDrive),
 motor_group(RightDrive),
 
 //Specify the PORT NUMBER of your inertial sensor, in PORT format (i.e. "PORT1", not simply "1"):
-PORT5,
+PORT7,
 
 //Input your wheel diameter. (4" omnis are actually closer to 4.125"):
 3.25,
@@ -235,13 +235,15 @@ void pre_auton() {
 void autonomous(void) {
   auto_started = true;
 
-  RightSide_HalfAWP();
+  //RightSide_HalfAWP();
   // Run this for tuning PID
   //tunepid();
   // drive_pid_test();
-  //  tuneodom();
+  //tuneodom();
+  // odom_test();
   // randomtest();
   // full_test();
+  LeftSide();
 
   // switch(current_auton_selection){ 
   //   case 0:
@@ -304,7 +306,7 @@ void autonomous(void) {
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-bool AlignerState = false;
+bool MatchloadState = false;
 bool DescoreState = false;
 
 void usercontrol(void) {
@@ -324,28 +326,29 @@ void usercontrol(void) {
     RampMotor.setVelocity(100,pct);
     ScoreMotor.setVelocity(100,pct);
     chassis.drive_max_voltage = 12;
+    
     while(true)
     {
       Brain.Screen.clearScreen();
       Brain.Screen.setCursor(1,1);
       Brain.Screen.print("Current Position: %f",chassis.get_absolute_heading());
-      if(abs(Controller1.Axis3.position()) > 30)
-      {
-        LeftDrive.spin(vex::forward,Controller1.Axis3.position(),percent);
-      }
-      else
-      {
-        LeftDrive.stop();
-      }
+      // if(abs(Controller1.Axis3.position()) > 30)
+      // {
+      //   LeftDrive.spin(vex::reverse,Controller1.Axis3.position(),percent);
+      // }
+      // else
+      // {
+      //   LeftDrive.stop();
+      // }
   
-      if(abs(Controller1.Axis2.position()) > 30)
-      {
-        RightDrive.spin(vex::forward,Controller1.Axis2.position(),percent);
-      }
-      else
-      {
-        RightDrive.stop();
-      }
+      // if(abs(Controller1.Axis2.position()) > 30)
+      // {
+      //   RightDrive.spin(vex::reverse,Controller1.Axis2.position(),percent);
+      // }
+      // else
+      // {
+      //   RightDrive.stop();
+      // }
 
       // Intake controls
       if(Controller1.ButtonR1.pressing()) {
@@ -377,10 +380,10 @@ void usercontrol(void) {
       Descore.set(DescoreState);
 
       if (Controller1.ButtonB.pressing()) {
-        AlignerState = !AlignerState;
+        MatchloadState = !MatchloadState;
         waitUntil(!Controller1.ButtonB.pressing());
       }
-      Aligner.set(AlignerState);
+      Matchload.set(MatchloadState);
       // // Pneumatic Control: Descore
       // bool DescoreCurrentPress = Controller1.ButtonX.pressing();
       // if (DescoreCurrentPress && !DescoreLastPress) {
@@ -389,13 +392,13 @@ void usercontrol(void) {
       // }
       // DescoreLastPress = DescoreCurrentPress;
 
-      // // Pneumatic Toggle: Aligner
-      // bool AlignerCurrentPress = Controller1.ButtonB.pressing();
-      // if (AlignerCurrentPress && !AlignerLastPress) {
-      //   AlignerState = !AlignerState;
-      //   Aligner.set(AlignerState);
+      // // Pneumatic Toggle: Matchload
+      // bool MatchloadCurrentPress = Controller1.ButtonB.pressing();
+      // if (MatchloadCurrentPress && !MatchloadLastPress) {
+      //   MatchloadState = !MatchloadState;
+      //   Matchload.set(MatchloadState);
       // }
-      // AlignerLastPress = AlignerCurrentPress;
+      // MatchloadLastPress = MatchloadCurrentPress;
 
 // ScoreMiddle.set(true);
       //Replace this line with 

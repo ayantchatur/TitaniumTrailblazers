@@ -32,6 +32,6 @@ extern motor ScoreMotor;
 // Pneumatics
 extern digital_out Descore;
 extern digital_out IntakeTilt;
-extern digital_out Aligner;
+extern digital_out Matchload;
 
 void  vexcodeInit( void );

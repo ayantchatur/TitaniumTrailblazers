@@ -35,3 +35,4 @@ void tuneodom();
 void RightSide_HalfAWP();
 
 void randomtest();
+void LeftSide();

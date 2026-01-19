@@ -24,7 +24,7 @@ void default_constants(){
 
   chassis.set_drive_constants(10, 0.4, 0, 1.3, 0);//0.4kd
   chassis.set_heading_constants(3, 0.5, 0, 0.00, 0);//(3, 1.1, 0, 0.01, 0);
-  chassis.set_turn_constants(12, .4, .03, 3.5, 10);//3.18
+  chassis.set_turn_constants(12, .4, .03, 3.5*1.002, 10);//3.18
   chassis.set_swing_constants(12, 0.3, .001, 2, 15); //(12, .3, .001, 2, 15);
 
   // Each exit condition set is in the form of (settle_error, settle_time, timeout).
@@ -586,4 +586,78 @@ void RightSide_HalfAWP(){
   // Intake2.spin(reverse, 100, pct);//
   wait(1300,msec);//900
   chassis.drive_with_voltage(0, 0);
+}
+
+void LeftSide(){
+  odom_constants();
+  // Set initial coordinates based on the first point of the path
+  chassis.set_coordinates(-162.574, 39.039, 158);
+
+  Brain.Screen.clearScreen();
+  Brain.Screen.printAt(50, 100, "Running LeftSide Auton!");
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print("LeftSide Auton");
+
+  // Diagnostic test: drive forward 1 inch
+  chassis.drive_distance(1);
+
+  // Path generated from Jerry IO points from path.jerryio.txt
+  chassis.holonomic_drive_to_pose(-152.574, 39.126, 158);
+  chassis.holonomic_drive_to_pose(-142.577, 38.955, 158);
+  chassis.holonomic_drive_to_pose(-132.589, 38.513, 158);
+  chassis.holonomic_drive_to_pose(-122.616, 37.792, 158);
+  chassis.holonomic_drive_to_pose(-112.666, 36.796, 158);
+  chassis.holonomic_drive_to_pose(-102.745, 35.539, 158);
+  chassis.holonomic_drive_to_pose(-92.855, 34.058, 158);
+  chassis.holonomic_drive_to_pose(-82.992, 32.412, 158);
+  chassis.holonomic_drive_to_pose(-73.138, 30.709, 158);
+  chassis.holonomic_drive_to_pose(-63.263, 29.133, 158);
+  chassis.holonomic_drive_to_pose(-53.3, 28.378, 158);
+  chassis.holonomic_drive_to_pose(-45.401, 32.933, 158);
+  chassis.holonomic_drive_to_pose(-47.121, 42.627, 158);
+  chassis.holonomic_drive_to_pose(-51.401, 51.659, 158);
+  chassis.holonomic_drive_to_pose(-56.5, 60.249, 158);
+  chassis.holonomic_drive_to_pose(-61.992, 68.605, 158);
+  chassis.holonomic_drive_to_pose(-66.396, 74.8, 158);
+  chassis.holonomic_drive_to_pose(-60.968, 66.402, 158);
+  chassis.holonomic_drive_to_pose(-55.36, 58.122, 158);
+  chassis.holonomic_drive_to_pose(-49.603, 49.946, 158);
+  chassis.holonomic_drive_to_pose(-43.646, 41.915, 158);
+  chassis.holonomic_drive_to_pose(-37.315, 34.177, 158);
+  chassis.holonomic_drive_to_pose(-30.888, 30.859, 158);
+  chassis.holonomic_drive_to_pose(-34.445, 40.151, 158);
+  chassis.holonomic_drive_to_pose(-39.375, 48.846, 158);
+  chassis.holonomic_drive_to_pose(-44.997, 57.113, 158);
+  chassis.holonomic_drive_to_pose(-51.121, 65.014, 158);
+  chassis.holonomic_drive_to_pose(-57.696, 72.544, 158);
+  chassis.holonomic_drive_to_pose(-64.705, 79.671, 158);
+  chassis.holonomic_drive_to_pose(-72.14, 86.351, 158);
+  chassis.holonomic_drive_to_pose(-79.993, 92.533, 158);
+  chassis.holonomic_drive_to_pose(-88.252, 98.157, 158);
+  chassis.holonomic_drive_to_pose(-96.9, 103.161, 158);
+  chassis.holonomic_drive_to_pose(-105.911, 107.477, 158);
+  chassis.holonomic_drive_to_pose(-115.247, 111.044, 158);
+  chassis.holonomic_drive_to_pose(-124.862, 113.791, 158);
+  chassis.holonomic_drive_to_pose(-134.712, 115.509, 158);
+  chassis.holonomic_drive_to_pose(-144.668, 116.322, 158);
+  chassis.holonomic_drive_to_pose(-154.661, 116.598, 158);
+  chassis.holonomic_drive_to_pose(-164.661, 116.659, 158);
+  chassis.holonomic_drive_to_pose(-174.658, 116.857, 158);
+  chassis.holonomic_drive_to_pose(-172.482, 117.875, 158);
+  chassis.holonomic_drive_to_pose(-162.494, 118.376, 158);
+  chassis.holonomic_drive_to_pose(-152.502, 118.75, 158);
+  chassis.holonomic_drive_to_pose(-142.506, 119.061, 158);
+  chassis.holonomic_drive_to_pose(-132.51, 119.324, 158);
+  chassis.holonomic_drive_to_pose(-122.512, 119.544, 158);
+  chassis.holonomic_drive_to_pose(-112.514, 119.723, 158);
+  chassis.holonomic_drive_to_pose(-102.515, 119.857, 158);
+  chassis.holonomic_drive_to_pose(-92.515, 119.941, 158);
+  chassis.holonomic_drive_to_pose(-82.515, 119.958, 158);
+  chassis.holonomic_drive_to_pose(-67.383, 119.791, 158);
+  chassis.holonomic_drive_to_pose(-67.383, 119.791, 0);
+
+  Brain.Screen.printAt(50, 120, "LeftSide Auton Complete!");
+  Controller1.Screen.setCursor(2,1);
+  Controller1.Screen.print("Auton Complete!");
 }
