@@ -28,6 +28,7 @@ void custom_auton();
 // PID Tuning
 void tunepid();
 void drive_pid_test();
+void piddrivetest();
 
 // Odometry Tuning
 void tuneodom();
@@ -36,3 +37,5 @@ void RightSide_HalfAWP();
 
 void randomtest();
 void LeftSide();
+
+void leftauton();

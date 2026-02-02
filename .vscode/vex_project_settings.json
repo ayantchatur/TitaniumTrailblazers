@@ -4,12 +4,12 @@
 		"json": 2
 	},
 	"project": {
-		"name": "tittrailbot3",
+		"name": "ERDAH",
 		"description": "",
 		"creationDate": "1/8/2026, 5:26:45 PM",
 		"platform": "V5",
 		"language": "cpp",
-		"slot": 1,
+		"slot": 3,
 		"sdkVersion": "V5_20240802_15_00_00",
 		"cpp": {
 			"includePath": [],

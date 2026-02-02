@@ -95,7 +95,7 @@ PORT7,
 
 //Gyro scale, this is what your gyro reads when you spin the robot 360 degrees.
 //For most cases 360 will do fine here, but this scale factor can be very helpful when precision is necessary.
-360,
+352.5,
 
 /*---------------------------------------------------------------------------*/
 /*                                  PAUSE!                                   */
@@ -243,7 +243,8 @@ void autonomous(void) {
   // odom_test();
   // randomtest();
   // full_test();
-  LeftSide();
+  // LeftSide();
+  leftauton();
 
   // switch(current_auton_selection){ 
   //   case 0:
@@ -352,11 +353,11 @@ void usercontrol(void) {
 
       // Intake controls
       if(Controller1.ButtonR1.pressing()) {
-        IntakeMotor.spin(reverse);
+        IntakeMotor.spin(forward);
         //RampMotor.spin(reverse);
         //ScoreMotor.spin(reverse);
       } else if(Controller1.ButtonR2.pressing()) {
-        IntakeMotor.spin(forward);
+        IntakeMotor.spin(reverse);
         //RampMotor.spin(forward);
         //ScoreMotor.spin(forward);
       } else {
@@ -366,9 +367,9 @@ void usercontrol(void) {
       }
 
       if(Controller1.ButtonL1.pressing()) {
-        ScoreMotor.spin(forward);
-      } else if(Controller1.ButtonL2.pressing()) {
         ScoreMotor.spin(reverse);
+      } else if(Controller1.ButtonL2.pressing()) {
+        ScoreMotor.spin(forward);
       } else {
         ScoreMotor.stop();
       }
@@ -379,11 +380,22 @@ void usercontrol(void) {
       }
       Descore.set(DescoreState);
 
+      if (Controller1.ButtonY.pressing()) {
+        DescoreState = !DescoreState;
+        waitUntil(!Controller1.ButtonY.pressing());
+      }
+      Descore.set(DescoreState);
+
       if (Controller1.ButtonB.pressing()) {
         MatchloadState = !MatchloadState;
         waitUntil(!Controller1.ButtonB.pressing());
       }
       Matchload.set(MatchloadState);
+
+      // if (Controller1.ButtonY.pressing()) {
+      //   piddrivetest();
+      //   waitUntil(!Controller1.ButtonY.pressing());
+      // }
       // // Pneumatic Control: Descore
       // bool DescoreCurrentPress = Controller1.ButtonX.pressing();
       // if (DescoreCurrentPress && !DescoreLastPress) {
