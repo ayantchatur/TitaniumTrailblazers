@@ -9,7 +9,7 @@ brain Brain;
 controller Controller1 = controller(primary);
 
 // Sensors
-inertial Inertial = inertial(PORT7);
+inertial Inertial = inertial(PORT16);
 //rotation ForwardTracker = rotation(PORT12, false);
 
 // LeftDrive
@@ -26,13 +26,13 @@ motor_group RightDrive = motor_group(RightDriveMotorA, RightDriveMotorB, RightDr
 
 // Other motors
 motor IntakeMotor = motor(PORT15, ratio6_1, false);
-motor RampMotor = motor(PORT17, ratio6_1, false);
-motor ScoreMotor = motor(PORT3, ratio18_1, true);
+motor RampMotor = motor(PORT3, ratio6_1, false);
+motor ScoreMotor = motor(PORT17, ratio18_1, true);
 
 // Pneumatics
-// digital_out Descore(Brain.ThreeWirePort.C);
-// digital_out IntakeTilt(Brain.ThreeWirePort.A);
-// digital_out Matchload(Brain.ThreeWirePort.H);
+ digital_out Descore(Brain.ThreeWirePort.C);
+//  digital_out IntakeTilt(Brain.ThreeWirePort.A);
+digital_out MatchLoader(Brain.ThreeWirePort.H);
 
 /*---------------------------------------------------------------------------*/
 /*                             VEXcode Config                                */
@@ -83,7 +83,7 @@ motor_group(LeftDrive),
 motor_group(RightDrive),
 
 //Specify the PORT NUMBER of your inertial sensor, in PORT format (i.e. "PORT1", not simply "1"):
-PORT7,
+PORT16,
 
 //Input your wheel diameter. (4" omnis are actually closer to 4.125"):
 3.25,
@@ -95,7 +95,7 @@ PORT7,
 
 //Gyro scale, this is what your gyro reads when you spin the robot 360 degrees.
 //For most cases 360 will do fine here, but this scale factor can be very helpful when precision is necessary.
-352.5,
+358.4,
 
 /*---------------------------------------------------------------------------*/
 /*                                  PAUSE!                                   */
@@ -307,8 +307,12 @@ void autonomous(void) {
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-bool MatchloadState = false;
-bool DescoreState = false;
+bool ScoreMiddleState = false;
+bool ScoreMiddleLastPress = false;
+bool matchLoaderState = false;
+bool matchLoaderLastPress = false;
+bool descoreState = false;
+bool descoreLastPress = false;
 
 void usercontrol(void) {
   // User control code here, inside the loop
@@ -366,6 +370,16 @@ void usercontrol(void) {
         //ScoreMotor.stop();
       }
 
+      if(Controller1.ButtonA.pressing()){
+        waitUntil(!Controller1.ButtonA.pressing());
+        DrivePIDTest();
+      }
+
+      if(Controller1.ButtonUp.pressing()){
+        waitUntil(!Controller1.ButtonUp.pressing());
+        TurnPIDTest();
+      }
+
       if(Controller1.ButtonL1.pressing()) {
         ScoreMotor.spin(reverse);
       } else if(Controller1.ButtonL2.pressing()) {
@@ -374,23 +388,29 @@ void usercontrol(void) {
         ScoreMotor.stop();
       }
 
-      if (Controller1.ButtonX.pressing()) {
-        DescoreState = !DescoreState;
-        waitUntil(!Controller1.ButtonX.pressing());
+      // Pneumatic Control: Intake Tilt (match loading)
+      bool matchLoaderCurrentPress = Controller1.ButtonB.pressing();
+      if (matchLoaderCurrentPress && !matchLoaderLastPress) {
+        matchLoaderState = !matchLoaderState;
+        MatchLoader.set(matchLoaderState);
       }
-      Descore.set(DescoreState);
+      matchLoaderLastPress = matchLoaderCurrentPress;
 
-      if (Controller1.ButtonY.pressing()) {
-        DescoreState = !DescoreState;
-        waitUntil(!Controller1.ButtonY.pressing());
-      }
-      Descore.set(DescoreState);
+      // // Pneumatic Toggle: Middle Goal Scoring
+      // bool ScoreMiddleCurrentPress = Controller1.ButtonB.pressing();
+      // if (ScoreMiddleCurrentPress && !ScoreMiddleLastPress) {
+      //   ScoreMiddleState = !ScoreMiddleState;
+      //   ScoreMiddle.set(ScoreMiddleState);
+      // }
+      // ScoreMiddleLastPress = ScoreMiddleCurrentPress;
 
-      if (Controller1.ButtonB.pressing()) {
-        MatchloadState = !MatchloadState;
-        waitUntil(!Controller1.ButtonB.pressing());
+      // Pneumatic Toggle: Descore
+      bool descoreCurrentPress = Controller1.ButtonX.pressing();
+      if (descoreCurrentPress && !descoreLastPress) {
+        descoreState = !descoreState;
+        Descore.set(descoreState);
       }
-      Matchload.set(MatchloadState);
+      descoreLastPress = descoreCurrentPress;
 
       // if (Controller1.ButtonY.pressing()) {
       //   piddrivetest();

@@ -28,7 +28,8 @@ void custom_auton();
 // PID Tuning
 void tunepid();
 void drive_pid_test();
-void piddrivetest();
+void DrivePIDTest();
+void TurnPIDTest();
 
 // Odometry Tuning
 void tuneodom();
