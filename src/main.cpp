@@ -9,7 +9,7 @@ brain Brain;
 controller Controller1 = controller(primary);
 
 // Sensors
-inertial Inertial = inertial(PORT16);
+inertial Inertial = inertial(PORT7);
 //rotation ForwardTracker = rotation(PORT12, false);
 
 // LeftDrive
@@ -83,7 +83,7 @@ motor_group(LeftDrive),
 motor_group(RightDrive),
 
 //Specify the PORT NUMBER of your inertial sensor, in PORT format (i.e. "PORT1", not simply "1"):
-PORT16,
+PORT7,
 
 //Input your wheel diameter. (4" omnis are actually closer to 4.125"):
 3.25,
@@ -95,7 +95,7 @@ PORT16,
 
 //Gyro scale, this is what your gyro reads when you spin the robot 360 degrees.
 //For most cases 360 will do fine here, but this scale factor can be very helpful when precision is necessary.
-358.4,
+353.04,
 
 /*---------------------------------------------------------------------------*/
 /*                                  PAUSE!                                   */
